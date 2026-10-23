@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+/* Definir colores personalizados usando CSS custom properties */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1e40af;
+}
+
+/* Crear clases utilitarias personalizadas */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.hover\:bg-primary-dark:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--color-primary);
+}
