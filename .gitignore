@@ -23,8 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 # Archivos sensibles - NO SUBIR NUNCA
-Claves.jsx
-Configuracion.jsx
 .env
 .env.local
 .env.production
