@@ -32,15 +32,23 @@ export default function Reportes() {
     setCargando(false);
   };
 
-  // --- LÓGICA REPORTE DEPORTISTAS ---
-  const generarReporteDeportistas = () => {
-    const datosFiltrados = [];
-    asistencias.forEach(asistencia => {
-      if (categoria && categoria !== 'TODAS' && asistencia.categoria !== categoria) return;
-      if (fechaInicio && asistencia.fecha < fechaInicio) return;
-      if (fechaFin && asistencia.fecha > fechaFin) return;
+ const generarReporteDeportistas = () => {
+  const datosFiltrados = [];
+  const registrosVistos = new Set(); // ← NUEVO: Para detectar duplicados
+  
+  asistencias.forEach(asistencia => {
+    if (categoria && categoria !== 'TODAS' && asistencia.categoria !== categoria) return;
+    if (fechaInicio && asistencia.fecha < fechaInicio) return;
+    if (fechaFin && asistencia.fecha > fechaFin) return;
 
-      asistencia.registros.forEach(reg => {
+    asistencia.registros.forEach(reg => {
+      // ← NUEVO: Crear clave única para detectar duplicados
+      const claveUnica = `${asistencia.fecha}|${asistencia.categoria}|${asistencia.actividad}|${reg.deportistaId || reg.nombre}`;
+      
+      // ← NUEVO: Solo agregar si no existe
+      if (!registrosVistos.has(claveUnica)) {
+        registrosVistos.add(claveUnica);
+        
         datosFiltrados.push({
           'Fecha': asistencia.fecha,
           'Categoría': asistencia.categoria,
@@ -50,18 +58,19 @@ export default function Reportes() {
           'Observación': reg.observacion || '',
           'Profesor': asistencia.profesorNombre
         });
-      });
+      }
     });
+  });
 
-    setFilas(datosFiltrados);
-    if (datosFiltrados.length === 0) return alert("No hay datos con esos filtros.");
+  setFilas(datosFiltrados);
+  if (datosFiltrados.length === 0) return alert("No hay datos con esos filtros.");
 
-    const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Asistencia Deportistas");
-    worksheet['!cols'] = [{ wch: 12 }, { wch: 15 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
-    XLSX.writeFile(workbook, `Reporte_Deportistas_${fechaInicio || 'Inicio'}_${fechaFin || 'Fin'}.xlsx`);
-  };
+  const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Asistencia Deportistas");
+  worksheet['!cols'] = [{ wch: 12 }, { wch: 15 }, { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 20 }, { wch: 20 }];
+  XLSX.writeFile(workbook, `Reporte_Deportistas_${fechaInicio || 'Inicio'}_${fechaFin || 'Fin'}.xlsx`);
+};
 
   // --- LÓGICA REPORTE PROFESORES (CUMPLIMIENTO) ---
   const generarReporteProfesores = () => {
@@ -145,6 +154,20 @@ export default function Reportes() {
           </div>
         </div>
       </div>
+// Agrega este botón temporal antes del botón de generar reporte
+<button 
+  onClick={async () => {
+    if (confirm("️ Esto eliminará duplicados de Firestore. ¿Continuar?")) {
+      const { limpiarDuplicadosAsistencias } = await import('../utils/limpiarDuplicados');
+      const resultado = await limpiarDuplicadosAsistencias();
+      alert(`✅ Se eliminaron ${resultado.eliminados} registros duplicados`);
+      cargarDatos(); // Recargar datos
+    }
+  }}
+  className="bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-yellow-700"
+>
+   Limpiar duplicados (SOLO UNA VEZ)
+</button>
 
       {/* Botón de acción */}
       <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-200">

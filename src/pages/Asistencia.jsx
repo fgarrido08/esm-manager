@@ -99,68 +99,67 @@ export default function Asistencia() {
   };
 
   const handleGuardar = async () => {
-    if (!categoria || !actividad || !fecha) {
-      return alert("Completa categoría, actividad y fecha");
+  if (!categoria || !actividad || !fecha) {
+    return alert("Completa categoría, actividad y fecha");
+  }
+  
+  if (actividad === 'Entrenamiento GOM' && !horario) {
+    return alert("️ Para Entrenamiento GOM es OBLIGATORIO seleccionar el Horario.");
+  }
+
+  if (registros.length === 0) {
+    return alert("No hay deportistas en esta categoría");
+  }
+
+  setGuardando(true);
+  
+  try {
+    const datosAsistencia = {
+      fecha: fecha,
+      categoria: categoria,
+      actividad: actividad,
+      profesorNombre: usuario?.nombre || 'Desconocido',
+      profesorId: usuario?.id || '',
+      registros: registros,
+      fechaCreacion: new Date().toISOString(),
+      fechaActualizacion: new Date().toISOString()
+    };
+
+    if (actividad === 'Entrenamiento GOM' && horario) {
+      datosAsistencia.horario = horario;
     }
+
+    // Construir query de búsqueda
+    const condiciones = [
+      where("fecha", "==", fecha),
+      where("categoria", "==", categoria),
+      where("actividad", "==", actividad)
+    ];
     
-    if (actividad === 'Entrenamiento GOM' && !horario) {
-      return alert("⚠️ Para Entrenamiento GOM es OBLIGATORIO seleccionar el Horario.");
+    if (actividad === 'Entrenamiento GOM' && horario) {
+      condiciones.push(where("horario", "==", horario));
     }
 
-    if (registros.length === 0) {
-      return alert("No hay deportistas en esta categoría");
+    const q = query(collection(db, "asistencias"), ...condiciones);
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      // ACTUALIZAR existente
+      const docId = snapshot.docs[0].id;
+      await updateDoc(doc(db, "asistencias", docId), datosAsistencia);
+      alert("✅ Asistencia actualizada correctamente");
+    } else {
+      // CREAR nuevo
+      await addDoc(collection(db, "asistencias"), datosAsistencia);
+      alert("✅ Asistencia guardada correctamente");
     }
-
-    setGuardando(true);
-    
-    try {
-      const datosAsistencia = {
-        fecha: fecha,
-        categoria: categoria,
-        actividad: actividad,
-        profesorNombre: usuario?.nombre || 'Desconocido',
-        profesorId: usuario?.id || '',
-        registros: registros,
-        fechaCreacion: new Date().toISOString(),
-        fechaActualizacion: new Date().toISOString()
-      };
-
-      if (actividad === 'Entrenamiento GOM' && horario) {
-        datosAsistencia.horario = horario;
-        console.log("✅ Guardando horario:", horario);
-      }
-
-      const condiciones = [
-        where("fecha", "==", fecha),
-        where("categoria", "==", categoria),
-        where("actividad", "==", actividad)
-      ];
-      
-      if (actividad === 'Entrenamiento GOM' && horario) {
-        condiciones.push(where("horario", "==", horario));
-      }
-
-      const q = query(collection(db, "asistencias"), ...condiciones);
-      const snapshot = await getDocs(q);
-
-      if (!snapshot.empty) {
-        const docId = snapshot.docs[0].id;
-        console.log("🔄 Actualizando documento:", docId);
-        await updateDoc(doc(db, "asistencias", docId), datosAsistencia);
-        alert("✅ Asistencia actualizada correctamente");
-      } else {
-        console.log("➕ Creando nuevo documento");
-        const docRef = await addDoc(collection(db, "asistencias"), datosAsistencia);
-        console.log("✅ Documento creado con ID:", docRef.id);
-        alert("✅ Asistencia guardada correctamente");
-      }
-    } catch (error) {
-      console.error("❌ Error al guardar:", error);
-      alert("❌ Error al guardar: " + error.message);
-    }
-    
-    setGuardando(false);
-  };
+  } catch (error) {
+    console.error("❌ Error al guardar:", error);
+    alert("❌ Error al guardar: " + error.message);
+  }
+  
+  setGuardando(false);
+};
 
   const handleEliminarDeportista = async (deportistaId) => {
     const deportista = registros.find(r => r.deportistaId === deportistaId);
