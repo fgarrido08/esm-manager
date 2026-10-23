@@ -253,9 +253,9 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full bg-primary text-white py-4 rounded-lg font-bold text-lg transition-colors shadow-md ${
-                loading ? 'bg-gray-400 cursor-not-allowed' : 'hover:bg-blue-800'
-              }`}
+              className={`w-full bg-[#2563eb] text-white py-4 rounded-lg font-bold text-lg transition-colors shadow-md ${
+              loading ? 'bg-gray-400 cursor-not-allowed' : 'hover:bg-[#1e40af]'
+            }`}
             >
               {loading ? 'Ingresando...' : 'Ingresar →'}
             </button>

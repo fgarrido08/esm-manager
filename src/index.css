@@ -1,24 +1,12 @@
 @import "tailwindcss";
 
-/* Definir colores personalizados usando CSS custom properties */
 :root {
-  --color-primary: #2563eb;
-  --color-primary-dark: #1e40af;
+  --color-primary: #4169E1; /* Azul Rey Institucional */
+  --color-primary-dark: #27408B; /* Azul Rey Oscuro */
 }
 
-/* Crear clases utilitarias personalizadas */
-.bg-primary {
-  background-color: var(--color-primary);
-}
-
-.text-primary {
-  color: var(--color-primary);
-}
-
-.hover\:bg-primary-dark:hover {
-  background-color: var(--color-primary-dark);
-}
-
-.focus\:ring-primary:focus {
-  --tw-ring-color: var(--color-primary);
-}
+/* Forzamos las clases para que Tailwind v4 las reconozca */
+.bg-primary { background-color: var(--color-primary); }
+.text-primary { color: var(--color-primary); }
+.hover\:bg-primary-dark:hover { background-color: var(--color-primary-dark); }
+.focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); }
